@@ -3,13 +3,12 @@ from threading import Thread, Event
 from time import time
 from math import ceil
 from html import escape
-from psutil import virtual_memory, cpu_percent, disk_usage
+from psutil import cpu_percent, disk_usage, net_io_counters, virtual_memory
 from requests import head as rhead
 from urllib.request import urlopen
 from telegram import InlineKeyboardMarkup
 
 from bot.helper.telegram_helper.bot_commands import BotCommands
-from bot import FINISHED_PROGRESS_STR, UN_FINISHED_PROGRESS_STR, download_dict, download_dict_lock, STATUS_LIMIT, botStartTime, DOWNLOAD_DIR, WEB_PINCODE, BASE_URL, EMOJI_THEME, TOTAL_TASKS_LIMIT, USER_TASKS_LIMIT, LEECH_LIMIT, MEGA_LIMIT, CREDIT_NAME, TORRENT_DIRECT_LIMIT, ZIP_UNZIP_LIMIT
 from bot.helper.telegram_helper.button_build import ButtonMaker
 
 import shutil
@@ -41,27 +40,32 @@ class MirrorStatus:
         STATUS_CHECKING = "📝 CheckUp"
         STATUS_SEEDING = "🌧 Seed"
     else:
-        STATUS_UPLOADING = "Upload"
-        STATUS_DOWNLOADING = "Download"
-        STATUS_CLONING = "Clone"
-        STATUS_WAITING = "Queue"
-        STATUS_PAUSED = "Pause"
-        STATUS_ARCHIVING = "Archive"
-        STATUS_EXTRACTING = "Extract"
-        STATUS_SPLITTING = "Split"
-        STATUS_CHECKING = "CheckUp"
-        STATUS_SEEDING = "Seed"
+        STATUS_UPLOADING = "📤 Upload"
+        STATUS_DOWNLOADING = "📥 Download"
+        STATUS_CLONING = "♻️ Clone"
+        STATUS_WAITING = "💤 Queue"
+        STATUS_PAUSED = "⛔️ Pause"
+        STATUS_ARCHIVING = "🔐 Archive"
+        STATUS_EXTRACTING = "📂 Extract"
+        STATUS_SPLITTING = "✂️ Split"
+        STATUS_CHECKING = "📝 CheckUp"
+        STATUS_SEEDING = "🌧 Seed"
 
 class EngineStatus:
-    STATUS_ARIA = "Aria2c v1.35.0"
-    STATUS_GD = "Google Api v2.51.0"
-    STATUS_MEGA = "MegaSDK v3.12.0"
-    STATUS_QB = "qBittorrent v4.3.9"
-    STATUS_TG = "Pyrogram v2.0.27"
-    STATUS_YT = "YT-dlp v22.5.18"
-    STATUS_EXT = "Extract | pExtract"
-    STATUS_SPLIT = "FFmpeg v2.9.1"
-    STATUS_ZIP = "p7zip v16.02"
+    STATUS_ARIA = "<b>Aria2c v1.35.0</b>"
+    STATUS_GD = "<b>Google Api v2.51.0</b>"
+    STATUS_MEGA = "<b>MegaSDK v3.12.0</b>"
+    STATUS_QB = "<b>qBittorrent v4.3.9</b>"
+    STATUS_TG = "<b>Pyrogram v2.0.27</b>"
+    STATUS_YT = "<b>YT-dlp v22.5.18</b>"
+    STATUS_EXT = "<b>Extract | pExtract</b>"
+    STATUS_SPLIT = "<b>FFmpeg v2.9.1</b>"
+    STATUS_ZIP = "<b>p7zip v16.02</b>"
+
+PROGRESS_MAX_SIZE = 100 // 9
+PROGRESS_INCOMPLETE = ['◔', '◔', '◑', '◑', '◑', '◕', '◕']
+# PROGRESS_INCOMPLETE = ['◌', '◌', '◎', '◎', '◎', '◍', '◍', '◍']
+# PROGRESS_INCOMPLETE = ['▤', '▤', '▦', '▦', '▦', '▩', '▩']
 
     
 SIZE_UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
@@ -141,17 +145,31 @@ def get_user_task(user_id):
         if userid == user_id: user_task += 1
     return user_task
 
+def progress_bar(percentage):
+    """Returns a progress bar for download"""
+    if isinstance(percentage, str):
+        return "NaN"
+    try:
+        percentage = int(percentage)
+    except Exception:
+        percentage = 0
+    comp = "▰"
+    ncomp = "▱"
+    return "".join(comp if i <= percentage // 10 else ncomp for i in range(1, 11))
+
 def get_progress_bar_string(status):
     completed = status.processed_bytes() / 8
     total = status.size_raw() / 8
     p = 0 if total == 0 else round(completed * 100 / total)
     p = min(max(p, 0), 100)
     cFull = p // 8
+    cPart = p % 8 - 1
     p_str = FINISHED_PROGRESS_STR * cFull
-    p_str += UN_FINISHED_PROGRESS_STR  * (12 - cFull)
-    p_str = f"[{p_str}]"
+    if cPart >= 0:
+        p_str += PROGRESS_INCOMPLETE[cPart]
+    p_str += UN_FINISHED_PROGRESS_STR  * (PROGRESS_MAX_SIZE - cFull)
+    p_str = f" ⠧{p_str}⠹"
     return p_str
-
 
 def get_readable_message():
     with download_dict_lock:
