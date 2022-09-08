@@ -72,7 +72,7 @@ def getHerokuDetails(h_api_key, h_app_name):
             abc += f"<b>├ 👍🏻 FREE</b>: {get_readable_time(quota_remain)}\n"
         else:
             abc += f'<b></b>\n'
-            abc += f'<b>╭─《 HEROKU STATS 》</b>\n'
+            abc += f'<b>╭─《🌐 HEROKU STATS 🌐》</b>\n'
             abc += f"<b>├ FULL</b>: {get_readable_time(account_quota)}\n"
             abc += f"<b>├ USED</b>: {get_readable_time(quota_used)}\n"
             abc += f"<b>├ FREE</b>: {get_readable_time(quota_remain)}\n"
@@ -102,7 +102,7 @@ def getHerokuDetails(h_api_key, h_app_name):
         else:
             abc += f"<b>├ APP USAGE:</b> {get_readable_time(AppQuotaUsed)}\n"
             abc += f"<b>├ OTHER APP:</b> {get_readable_time(OtherAppsUsage)}\n"
-            abc += f'<b>╰─《 {CREDIT_NAME} 》</b>'
+            abc += f'<b>╰─《 ☣️ {CREDIT_NAME} ☣️ 》</b>'
         return abc
     except Exception as g:
         LOGGER.error(g)
@@ -130,7 +130,7 @@ def stats(update, context):
             last_commit = check_output(["git log -1 --date=short --pretty=format:'%cd \n<b>├</b> 🛠<b>From</b> %cr'"], shell=True).decode()
             botVersion = check_output(["git log -1 --date=format:v%y.%m%d.%H%M --pretty=format:%cd"], shell=True).decode()
         else:
-            last_commit = check_output(["git log -1 --date=short --pretty=format:'%cd \n<b>├</b> <b>From</b> %cr'"], shell=True).decode()
+            last_commit = check_output(["git log -1 --date=short --pretty=format:'%cd \n<b>├  From</b> %cr'"], shell=True).decode()
             botVersion = check_output(["git log -1 --date=format:v%y.%m%d.%H%M --pretty=format:%cd"], shell=True).decode()
     else:
         botVersion = 'No UPSTREAM_REPO'
@@ -169,7 +169,7 @@ def stats(update, context):
                     f'<b>╰ 🔻 Download Data:</b> {recv}\n\n'
 
     else:
-            stats = f'<b>╭─《 BOT STATISTICS 》</b>\n' \
+            stats = f'<b>╭─《🌐 BOT STATISTICS 🌐》</b>\n' \
                     f'<b>├  Updated On: </b>{last_commit}\n'\
                     f'<b>├  Uptime: </b>{currentTime}\n'\
                     f'<b>├  OS Uptime: </b>{osUptime}\n'\
@@ -268,14 +268,14 @@ Type /{BotCommands.HelpCommand} to get a list of available commands
 def restart(update, context):
     cmd = update.effective_message.text.split(' ', 1)
     dynoRestart = False
-    dynoKill = False
+   # dynoKill = False
     if len(cmd) == 2:
         dynoRestart = (cmd[1].lower()).startswith('d')
-        dynoKill = (cmd[1].lower()).startswith('k')
+      #  dynoKill = (cmd[1].lower()).startswith('k')
     if (not HEROKU_API_KEY) or (not HEROKU_APP_NAME):
         LOGGER.info("If you want Heroku features, fill HEROKU_APP_NAME HEROKU_API_KEY vars.")
         dynoRestart = False
-        dynoKill = False
+      #  dynoKill = False
     if dynoRestart:
         LOGGER.info("Dyno Restarting.")
         restart_message = sendMessage("Dyno Restarting.", context.bot, update.message)
@@ -285,16 +285,16 @@ def restart(update, context):
         heroku_conn = heroku3.from_key(HEROKU_API_KEY)
         app = heroku_conn.app(HEROKU_APP_NAME)
         app.restart()
-    elif dynoKill:
-        LOGGER.info("Killing Dyno. MUHAHAHA")
-        sendMessage("Killed Dyno.", context.bot, update.message)
-        alive.kill()
-        clean_all()
-        heroku_conn = heroku3.from_key(HEROKU_API_KEY)
-        app = heroku_conn.app(HEROKU_APP_NAME)
-        proclist = app.process_formation()
-        for po in proclist:
-            app.process_formation()[po.type].scale(0)
+    # elif dynoKill:
+       # LOGGER.info("Killing Dyno. MUHAHAHA")
+       # sendMessage("Killed Dyno.", context.bot, update.message)
+       # alive.kill()
+       # clean_all()
+       # heroku_conn = heroku3.from_key(HEROKU_API_KEY)
+       # app = heroku_conn.app(HEROKU_APP_NAME)
+       # proclist = app.process_formation()
+       # for po in proclist:
+          #  app.process_formation()[po.type].scale(0)
     else:
         LOGGER.info("Normally Restarting.")
         restart_message = sendMessage("Normally Restarting.", context.bot, update.message)
@@ -330,7 +330,7 @@ def log(update, context):
 
 
 help_string = '''
-<b><a href='https://github.com/codewithweeb/mirror-with-weeb'>WeebZone</a></b> - The Ultimate Telegram MIrror-Leech Bot to Upload Your File & Link in Google Drive & Telegram
+<b><a href='https://github.com'>Ajay-Mirror</a></b> - The Ultimate Telegram MIrror-Leech Bot to Upload Your File & Link in Google Drive & Telegram
 Choose a help category:
 '''
 
@@ -369,13 +369,13 @@ help_string_telegraph_user = f'''
 <br><br>
 • <b>/{BotCommands.DeleteCommand}</b> [drive_url]: Delete file/folder from Google Drive (Only Owner & Sudo)
 <br><br>
-• <b>/{BotCommands.WatchCommand}</b> [yt-dlp supported link]: Mirror yt-dlp supported link. Send <b>/{BotCommands.WatchCommand}</b> for more help
+• <b>/{BotCommands.YtdlCommand}</b> [yt-dlp supported link]: Mirror yt-dlp supported link. Send <b>/{BotCommands.YtdlCommand}</b> for more help
 <br><br>
-• <b>/{BotCommands.ZipWatchCommand}</b> [yt-dlp supported link]: Mirror yt-dlp supported link as zip
+• <b>/{BotCommands.YtdlZipCommand}</b> [yt-dlp supported link]: Mirror yt-dlp supported link as zip
 <br><br>
-• <b>/{BotCommands.LeechWatchCommand}</b> [yt-dlp supported link]: Leech yt-dlp supported link
+• <b>/{BotCommands.YtdlLeechCommand}</b> [yt-dlp supported link]: Leech yt-dlp supported link
 <br><br>
-• <b>/{BotCommands.LeechZipWatchCommand}</b> [yt-dlp supported link]: Leech yt-dlp supported link as zip
+• <b>/{BotCommands.YtdlZipLeechCommand}</b> [yt-dlp supported link]: Leech yt-dlp supported link as zip
 <br><br>
 • <b>/{BotCommands.LeechSetCommand}</b>: Leech settings
 <br><br>
