@@ -1,5 +1,4 @@
-from telegram import InlineKeyboardButton
-
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 class ButtonMaker:
     def __init__(self):
